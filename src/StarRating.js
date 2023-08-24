@@ -1,4 +1,5 @@
 import { useState } from "react"
+import PropTypes from 'prop-types';
 
 const containerStyle = {
     display: "flex",
@@ -10,19 +11,34 @@ const starContainerStyle = {
     display: "flex",
 }
 
-const textStyle = {
-    lineHeight: "1",
-    margin: "0",
+StarRating.propTypes = {
+    maxRating: PropTypes.number.isRequired,
+    color: PropTypes.string,
+    size: PropTypes.number,
+    className: PropTypes.string,
+    messages: PropTypes.arrayOf(PropTypes.string), // I can also use PropTypes.array but this is more specific
+    defaultRating: PropTypes.number,
+    onSetRating: PropTypes.func,
 }
 
-export default function StarRating({ maxRating = 5 }) {
+export default function StarRating({ maxRating = 5, color = "#fcc419", size = 48, className = "", messages = [], defaultRating = 0, onSetRating = () => { } }) {
 
-    const [rate, setRate] = useState(0);
+    //this is not a good practice to use props value as state value but in this case it is ok because we are not changing the value of props
+    const [rate, setRate] = useState(defaultRating);
     const [tempRate, setTempRate] = useState(0);
 
     function handleRate(rating) {
         setRate(rating);
+        onSetRating(rating);
     }
+
+    const textStyle = {
+        lineHeight: "1",
+        margin: "0",
+        color,
+        fontSize: `${size / 1.5}px`
+    }
+
 
     function handleReset() {
         setTempRate(0);
@@ -33,7 +49,7 @@ export default function StarRating({ maxRating = 5 }) {
     }
 
     return (
-        <div style={containerStyle}>
+        <div style={containerStyle} className={className}>
             <div style={starContainerStyle}>
                 {Array.from({ length: maxRating }, (_, i) => (
                     <Star
@@ -42,23 +58,28 @@ export default function StarRating({ maxRating = 5 }) {
                         onHover={() => handleMouseEnter(i + 1)}
                         onHoverOut={handleReset}
                         full={tempRate ? i < tempRate : i < rate}
+                        color={color}
+                        size={size}
                     />
                 ))}
             </div>
-            <p style={textStyle}>{tempRate || rate || ""}</p>
+            <p style={textStyle}>{messages.length === maxRating ? messages[tempRate - 1 || rate - 1] : tempRate || rate || ""}</p>
         </div>
     )
 }
 
 
-const starStyle = {
-    width: "48px",
-    height: "48px",
-    display: "block",
-    cursor: "pointer",
-}
 
-function Star({ onRate, onHover, onHoverOut, full = false }) {
+
+function Star({ onRate, onHover, onHoverOut, full = false, color, size }) {
+
+    const starStyle = {
+        width: `${size}px`,
+        height: `${size}px`,
+        display: "block",
+        cursor: "pointer",
+    }
+
     return (
         <span style={starStyle} onClick={onRate} onMouseEnter={onHover} onMouseLeave={onHoverOut}>
             {
@@ -66,8 +87,8 @@ function Star({ onRate, onHover, onHoverOut, full = false }) {
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20"
-                        fill="#000"
-                        stroke="#000"
+                        fill={color}
+                        stroke={color}
                     >
                         <path
                             d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
@@ -78,7 +99,7 @@ function Star({ onRate, onHover, onHoverOut, full = false }) {
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
-                        stroke="#000"
+                        stroke={color}
                     >
                         <path
                             strokeLinecap="round"
