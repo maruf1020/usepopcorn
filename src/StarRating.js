@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 const containerStyle = {
     display: "flex",
     alignItems: "center",
-    gap: "16px",
+    gap: "12px",
 }
 
 const starContainerStyle = {
@@ -36,7 +36,7 @@ export default function StarRating({ maxRating = 5, color = "#fcc419", size = 48
         lineHeight: "1",
         margin: "0",
         color,
-        fontSize: `${size / 1.5}px`
+        fontSize: `${size / 1.25}px`
     }
 
 

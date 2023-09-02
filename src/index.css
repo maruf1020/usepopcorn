@@ -16,6 +16,28 @@
   box-sizing: border-box;
 }
 
+/* ===== Scrollbar CSS ===== */
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #e0e0e6 #2b3035;
+}
+
+/* Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+  width: 7px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #2b3035;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #e0e0e6;
+  border-radius: 25px;
+  border: 2px solid #2b3035;
+}
+
 html {
   font-size: 62.5%;
 }
@@ -50,13 +72,16 @@ body {
 }
 
 .box {
-  width: 42rem;
-  max-width: 42rem;
+  width: calc(100vw - 3 * 2.4rem);
+  max-width: 500px;
   background-color: var(--color-background-500);
   border-radius: 0.9rem;
-  overflow: scroll;
+  overflow: hidden;
+  overflow-y: scroll;
   position: relative;
 }
+
+
 
 .loader {
   text-align: center;
@@ -138,7 +163,7 @@ body {
 .list {
   list-style: none;
   padding: 0.8rem 0;
-  overflow: scroll;
+  overflow: hidden;
 }
 
 .list-watched {
@@ -260,7 +285,7 @@ body {
 }
 
 .details-overview {
-  width: 100%;
+  width: 67%;
   padding: 2.4rem 3rem;
   background-color: var(--color-background-100);
   display: flex;
@@ -280,6 +305,7 @@ body {
   gap: 0.8rem;
 }
 
+.search-instruction,
 .rating {
   background-color: var(--color-background-100);
   border-radius: 0.9rem;
@@ -289,7 +315,10 @@ body {
   display: flex;
   flex-direction: column;
   gap: 2.4rem;
+  align-items: center;
 }
+
+
 
 .btn-add {
   background-color: var(--color-primary);

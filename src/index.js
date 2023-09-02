@@ -18,11 +18,13 @@ import StarRating from './StarRating';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
+  // <React.StrictMode>
+  <>
     <App />
     {/* <StarRating maxRating={5} messages={['Terrible', 'Bad', 'Okay', 'Good', 'Great']} />
     <StarRating maxRating={10} color='red' size={70} className={"testClass"} defaultRating={2} />
     <MovieStarTest /> */}
-  </React.StrictMode>
+  </>
+  // </React.StrictMode>
 );
 
