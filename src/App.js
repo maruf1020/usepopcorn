@@ -90,14 +90,14 @@ export default function App() {
       return;
     }
 
-    const abortController = new AbortController();
+    const controller = new AbortController();
     (async function getMovies() {
       handleCloseMovie();
       try {
         setLoading(true);
         setError("");
 
-        const res = await fetch(`http://www.omdbapi.com/?i=tt3896198&apikey=${APIKey}&s=${query}`, { signal: abortController.signal });
+        const res = await fetch(`http://www.omdbapi.com/?i=tt3896198&apikey=${APIKey}&s=${query}`, { signal: controller.signal });
 
         if (!res.ok) {
           throw new Error("Something went wrong with getting movies");
@@ -121,7 +121,7 @@ export default function App() {
       }
     })();
     return () => {
-      abortController.abort();
+      controller.abort();
     }
   }, [query]);
 
@@ -308,10 +308,11 @@ function MovieDetails({ selectedID, onCLoseMovie, onAddWatchMovie, watched }) {
   }, [onCLoseMovie]);
 
   useEffect(() => {
+    const controller = new AbortController();
     (async function getMovieDetails() {
       setLoading(true);
       try {
-        const res = await fetch(`http://www.omdbapi.com/?apikey=${APIKey}&i=${selectedID}`);
+        const res = await fetch(`http://www.omdbapi.com/?apikey=${APIKey}&i=${selectedID}`, { signal: controller.signal });
         if (!res.ok) {
           throw new Error("Something went wrong with getting movie details");
         }
@@ -323,6 +324,11 @@ function MovieDetails({ selectedID, onCLoseMovie, onAddWatchMovie, watched }) {
         setLoading(false);
       }
     })();
+
+    return () => {
+      controller.abort();
+    }
+
   }, [selectedID]);
 
   function handleAddWatchedMovie() {
