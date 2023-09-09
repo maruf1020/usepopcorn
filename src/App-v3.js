@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import StarRating from "./StarRating";
+import { useMovies } from "./useMovies";
+import { useLocalStorageState } from "./useLocalStorageState";
+import { useKey } from "./useKey";
 
 
 const average = (arr) =>
@@ -8,18 +11,17 @@ const average = (arr) =>
 const APIKey = "f934c8b3";
 
 export default function App() {
-  const [movies, setMovies] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [selectedID, setSelectedID] = useState(null);
+  const { movies, loading, error } = useMovies(query, handleCloseMovie);
+  const [watched, setWatched] = useLocalStorageState("watchedMovies", []);
 
   // const [watched, setWatched] = useState([]);
-  const [watched, setWatched] = useState(() => {
-    const savedWatchedMovie = localStorage.getItem("watchedMovies");
-    const initialValue = JSON.parse(savedWatchedMovie);
-    return initialValue || [];
-  });
+  // const [watched, setWatched] = useState(() => {
+  //   const savedWatchedMovie = localStorage.getItem("watchedMovies");
+  //   const initialValue = JSON.parse(savedWatchedMovie);
+  //   return initialValue || [];
+  // });
 
   //We should do like this:
   // const [watched, setWatched] = useState(btn-deletelocalStorage.getItem("watchedMovies")));
@@ -43,9 +45,9 @@ export default function App() {
     });
   }
 
-  useEffect(() => {
-    localStorage.setItem("watchedMovies", JSON.stringify(watched));
-  }, [watched]);
+  // useEffect(() => {
+  //   localStorage.setItem("watchedMovies", JSON.stringify(watched));
+  // }, [watched]);
   //the benefit of using useEffect here in this scenario is that we can use always updated with watch movies. Either the movies are added or deleted, we can always get the updated watched movies. If we don't use useEffect and use inside of handleAddWatchedMovie function, we can only get the updated watched movies when we add a new movie. But, if we delete a movie, we cannot get the updated watched movies. So, we should use useEffect here.
 
   function handleDeleteWatchedMovie(id, e) {
@@ -53,48 +55,6 @@ export default function App() {
     setWatched((prev) => prev.filter((movie) => movie.imdbID !== id));
     setSelectedID(null);
   }
-
-  useEffect(() => {
-    if (query.length < 3) {
-      setMovies([]);
-      setError("");
-      return;
-    }
-
-    const controller = new AbortController();
-    (async function getMovies() {
-      handleCloseMovie();
-      try {
-        setLoading(true);
-        setError("");
-
-        const res = await fetch(`http://www.omdbapi.com/?i=tt3896198&apikey=${APIKey}&s=${query}`, { signal: controller.signal });
-
-        if (!res.ok) {
-          throw new Error("Something went wrong with getting movies");
-        }
-
-        const data = await res.json();
-        if (data.Response === "False" || data.Search === undefined) {
-          throw new Error("Movie not found!");
-        } else if (data.Response === "True") {
-          setMovies(data.Search);
-        }
-
-      } catch (err) {
-        console.log(err.message);
-
-        if (err.name !== "AbortError") {
-          setError(err.message);
-        }
-      } finally {
-        setLoading(false);
-      }
-    })();
-    return () => {
-      controller.abort();
-    }
-  }, [query]);
 
   return (
     <>
@@ -173,25 +133,34 @@ function Search({ query, setQuery }) {
     inputRef.current.focus();
   }, []);
 
-  useEffect(() => {
-    console.log(inputRef)
 
-    function callback(e) {
 
-      if (document.activeElement === inputRef.current) return;
+  useKey("Enter", () => {
+    if (document.activeElement === inputRef.current) return;
+    inputRef.current.focus();
+    setQuery("");
+  });
 
-      if (e.code === "Enter") {
-        inputRef.current.focus();
-        setQuery("");
-      }
-    }
+  // useEffect(() => {
+  //   console.log(inputRef)
 
-    document.addEventListener("keydown", callback);
-    return () => {
-      document.removeEventListener("keydown", callback);
-    }
+  //   function callback(e) {
 
-  }, [setQuery]);
+  //     // if (document.activeElement === inputRef.current) return;
+
+  //     if (e.code === "Enter") {
+  //       if (document.activeElement === inputRef.current) return;
+  //       inputRef.current.focus();
+  //       setQuery("");
+  //     }
+  //   }
+
+  //   document.addEventListener("keydown", callback);
+  //   return () => {
+  //     document.removeEventListener("keydown", callback);
+  //   }
+
+  // }, [setQuery]);
 
 
   return (
@@ -221,7 +190,6 @@ function Main({ children }) {
     </main>
   )
 }
-
 
 function Box({ children }) {
   const [isOpen, setIsOpen] = useState(true);
@@ -283,6 +251,7 @@ function MovieDetails({ selectedID, onCLoseMovie, onAddWatchMovie, watched }) {
   //SO, In the conclusion, 
   //1. use let or const:: if the value is need only for current render and the value change don't make any re-render.
   //2. use useEffect:: if the value is need for each render and the value change will make a re-render.
+  //3. use useRef:: if the value is need for each render and the value change don't make any re-render.
 
   useEffect(() => {
     if (userRating) countRef.current++;
@@ -316,23 +285,25 @@ function MovieDetails({ selectedID, onCLoseMovie, onAddWatchMovie, watched }) {
   //   setIsHigh(imdbRating > 7);
   // }, [imdbRating]); 
 
-  useEffect(() => {
+  useKey("Escape", onCLoseMovie);
 
-    function handleEscape(e) {
-      if (e.code === "Escape") {
-        onCLoseMovie();
-      }
-    }
+  // useEffect(() => {
 
-    document.addEventListener("keydown", handleEscape, {
-      once: true
-    });
+  //   function handleEscape(e) {
+  //     if (e.code === "Escape") {
+  //       onCLoseMovie();
+  //     }
+  //   }
 
-    return () => {
-      document.removeEventListener("keydown", handleEscape);
-    }
+  //   document.addEventListener("keydown", handleEscape, {
+  //     once: true
+  //   });
 
-  }, [onCLoseMovie]);
+  //   return () => {
+  //     document.removeEventListener("keydown", handleEscape);
+  //   }
+
+  // }, [onCLoseMovie]);
 
   useEffect(() => {
     const controller = new AbortController();
